@@ -1,0 +1,228 @@
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+local Players = game:GetService("Players")
+local ReplicatedStorage = game:GetService("ReplicatedStorage")
+local LocalPlayer = Players.LocalPlayer
+
+local remote = ReplicatedStorage:FindFirstChild("ExecutorChatRemote")
+if not remote then
+    remote = Instance.new("RemoteEvent")
+    remote.Name = "ExecutorChatRemote"
+    remote.Parent = ReplicatedStorage
+end
+
+local playerGui = LocalPlayer:WaitForChild("PlayerGui")
+local screenGui = Instance.new("ScreenGui", playerGui)
+screenGui.Name = "ExecutorChat"
+
+local toggleBtn = Instance.new("TextButton", screenGui)
+toggleBtn.Size = UDim2.new(0, 45, 0, 45)
+toggleBtn.Position = UDim2.new(1, -60, 0.5, -20)
+toggleBtn.BackgroundColor3 = Color3.fromRGB(50, 50, 50)
+toggleBtn.TextColor3 = Color3.new(1,1,1)
+toggleBtn.Text = "💬"
+toggleBtn.Font = Enum.Font.SourceSansBold
+toggleBtn.TextSize = 22
+toggleBtn.AutoButtonColor = true
+local toggleCorner = Instance.new("UICorner", toggleBtn)
+toggleCorner.CornerRadius = UDim.new(0, 12)
+
+local chatFrame = Instance.new("Frame", screenGui)
+chatFrame.Size = UDim2.new(0, 420, 0, 280)
+chatFrame.Position = UDim2.new(0.25, -210, 0.6, -140)
+chatFrame.BackgroundColor3 = Color3.fromRGB(30,30,30)
+chatFrame.BackgroundTransparency = 0.05
+chatFrame.Visible = true
+chatFrame.Active = true
+chatFrame.Draggable = true
+local chatCorner = Instance.new("UICorner", chatFrame)
+chatCorner.CornerRadius = UDim.new(0, 16)
+
+local titleBar = Instance.new("TextLabel", chatFrame)
+titleBar.Size = UDim2.new(1,0,0,32)
+titleBar.BackgroundColor3 = Color3.fromRGB(25,25,25)
+titleBar.Text = " Executor Chat"
+titleBar.TextColor3 = Color3.fromRGB(255,255,255)
+titleBar.Font = Enum.Font.SourceSansBold
+titleBar.TextSize = 18
+titleBar.TextXAlignment = Enum.TextXAlignment.Left
+local titleCorner = Instance.new("UICorner", titleBar)
+titleCorner.CornerRadius = UDim.new(0, 12)
+
+local scroll = Instance.new("ScrollingFrame", chatFrame)
+scroll.Size = UDim2.new(1, -10, 1, -80)
+scroll.Position = UDim2.new(0,5,0,38)
+scroll.BackgroundTransparency = 1
+scroll.BorderSizePixel = 0
+scroll.CanvasSize = UDim2.new(0,0,0,0)
+
+local layout = Instance.new("UIListLayout", scroll)
+layout.SortOrder = Enum.SortOrder.LayoutOrder
+layout.Padding = UDim.new(0,6)
+
+local input = Instance.new("TextBox", chatFrame)
+input.Size = UDim2.new(1, -80, 0, 32)
+input.Position = UDim2.new(0,5,1,-37)
+input.PlaceholderText = "اكتب رسالتك..."
+input.Font = Enum.Font.SourceSans
+input.TextSize = 16
+input.TextColor3 = Color3.new(1,1,1)
+input.BackgroundColor3 = Color3.fromRGB(40,40,40)
+input.ClearTextOnFocus = false
+local inputCorner = Instance.new("UICorner", input)
+inputCorner.CornerRadius = UDim.new(0, 8)
+
+local sendBtn = Instance.new("TextButton", chatFrame)
+sendBtn.Size = UDim2.new(0,70,0,32)
+sendBtn.Position = UDim2.new(1, -75, 1, -37)
+sendBtn.Text = "إرسال"
+sendBtn.Font = Enum.Font.SourceSansBold
+sendBtn.TextSize = 16
+sendBtn.BackgroundColor3 = Color3.fromRGB(60,60,60)
+sendBtn.TextColor3 = Color3.new(1,1,1)
+local sendCorner = Instance.new("UICorner", sendBtn)
+sendCorner.CornerRadius = UDim.new(0, 8)
+
+local function addMessage(name, text)
+    local container = Instance.new("Frame")
+    container.Size = UDim2.new(1, -10, 0, 22)
+    container.BackgroundTransparency = 1
+    container.Parent = scroll
+
+    local msgLabel = Instance.new("TextLabel", container)
+    msgLabel.Size = UDim2.new(1,0,1,0)
+    msgLabel.BackgroundTransparency = 1
+    msgLabel.TextXAlignment = Enum.TextXAlignment.Left
+    msgLabel.Font = Enum.Font.SourceSans
+    msgLabel.TextSize = 16
+    msgLabel.TextWrapped = true
+    msgLabel.TextColor3 = Color3.fromRGB(230,230,230)
+
+    if name == "cryptonblox_Ban1day" then
+        msgLabel.Text = "["..name.." ✅]: "..text
+        msgLabel.TextColor3 = Color3.fromRGB(0,170,255)
+    else
+        msgLabel.Text = "["..name.."]: "..text
+    end
+
+    scroll.CanvasSize = UDim2.new(0,0,0, layout.AbsoluteContentSize.Y+10)
+    scroll.CanvasPosition = Vector2.new(0, math.max(0, layout.AbsoluteContentSize.Y - scroll.AbsoluteWindowSize.Y))
+end
+
+remote.OnClientEvent:Connect(function(data)
+    if data.user and data.msg then
+        addMessage(data.user, data.msg)
+    end
+end)
+
+local function sendMessage()
+    if input.Text ~= "" then
+        local msg = input.Text
+        input.Text = ""
+        addMessage(LocalPlayer.Name, msg)
+        remote:FireAllClients({
+            user = LocalPlayer.Name,
+            msg = msg
+        })
+    end
+end
+
+sendBtn.MouseButton1Click:Connect(sendMessage)
+input.FocusLost:Connect(function(enterPressed)
+    if enterPressed then sendMessage() end
+end)
+
+local chatVisible = true
+toggleBtn.MouseButton1Click:Connect(function()
+    chatVisible = not chatVisible
+    chatFrame.Visible = chatVisible
+end)
+
+addMessage("System", "✅ تم تفعيل الشات. الرسائل تصل لكل اللاعبين مفعلين السكربت.")
